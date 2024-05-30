@@ -76,108 +76,22 @@ module.exports = {
       //   auto: false,
       //   interval: 1000,
       // },
-      forking: {
-        url: 'https://mainnet.infura.io/v3/' + process.env['INFURA_KEY'],
-        enabled: process.env['SHOULD_FORK'] === '1',
-      },
+      // forking: {
+      //   url: 'https://mainnet.infura.io/v3/' + process.env['INFURA_KEY'],
+      //   enabled: process.env['SHOULD_FORK'] === '1',
+      // },
     },
-    mainnet: {
-      url: 'https://mainnet.infura.io/v3/' + process.env['INFURA_KEY'],
-      accounts: process.env['MAINNET_PRIVKEY']
-        ? [process.env['MAINNET_PRIVKEY']]
-        : [],
-    },
-    goerli: {
-      url: 'https://goerli.infura.io/v3/' + process.env['INFURA_KEY'],
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    sepolia: {
-      url: 'https://sepolia.infura.io/v3/' + process.env['INFURA_KEY'],
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    rinkeby: {
-      url: 'https://rinkeby.infura.io/v3/' + process.env['INFURA_KEY'],
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    arbRinkeby: {
-      url: 'https://rinkeby.arbitrum.io/rpc',
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    arbGoerliRollup: {
-      url: 'https://goerli-rollup.arbitrum.io/rpc',
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    arbSepolia: {
-      url: 'https://sepolia-rollup.arbitrum.io/rpc',
-      accounts: process.env['DEVNET_PRIVKEY']
-        ? [process.env['DEVNET_PRIVKEY']]
-        : [],
-    },
-    arb1: {
-      url: 'https://arb1.arbitrum.io/rpc',
-      accounts: process.env['MAINNET_PRIVKEY']
-        ? [process.env['MAINNET_PRIVKEY']]
-        : [],
-    },
-    nova: {
-      url: 'https://nova.arbitrum.io/rpc',
-      accounts: process.env['MAINNET_PRIVKEY']
-        ? [process.env['MAINNET_PRIVKEY']]
-        : [],
-    },
-    geth: {
-      url: 'http://localhost:8545',
+    deploy: {
+      url: process.env.RPC_ENDPOINT,
+      // gasPrice: 10000000000,
+      //gasPrice: 8000000000,
+      //gas: 20000000,
+      chainId: Number(process.env.CHAIN_ID),
+      accounts: [process.env.PKEY as string],
+      allowUnlimitedContractSize: true,
     },
   },
-  etherscan: {
-    apiKey: {
-      mainnet: process.env['ETHERSCAN_API_KEY'],
-      goerli: process.env['ETHERSCAN_API_KEY'],
-      sepolia: process.env['ETHERSCAN_API_KEY'],
-      rinkeby: process.env['ETHERSCAN_API_KEY'],
-      arbitrumOne: process.env['ARBISCAN_API_KEY'],
-      arbitrumTestnet: process.env['ARBISCAN_API_KEY'],
-      nova: process.env['NOVA_ARBISCAN_API_KEY'],
-      arbGoerliRollup: process.env['ARBISCAN_API_KEY'],
-      arbSepolia: process.env['ARBISCAN_API_KEY'],
-    },
-    customChains: [
-      {
-        network: 'nova',
-        chainId: 42170,
-        urls: {
-          apiURL: 'https://api-nova.arbiscan.io/api',
-          browserURL: 'https://nova.arbiscan.io/',
-        },
-      },
-      {
-        network: 'arbGoerliRollup',
-        chainId: 421613,
-        urls: {
-          apiURL: 'https://api-goerli.arbiscan.io/api',
-          browserURL: 'https://goerli.arbiscan.io/',
-        },
-      },
-      {
-        network: 'arbSepolia',
-        chainId: 421614,
-        urls: {
-          apiURL: 'https://sepolia-explorer.arbitrum.io/api',
-          browserURL: 'https://sepolia-explorer.arbitrum.io/',
-        },
-      },
-    ],
-  },
+
   mocha: {
     timeout: 0,
   },

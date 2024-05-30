@@ -37,15 +37,18 @@
     "test:signatures": "./test/signatures/test-sigs.bash",
     "test:e2e": "hardhat test test/e2e/*.ts",
     "postinstall": "patch-package",
-    "deploy-factory": "hardhat run scripts/deployment.ts",
-    "deploy-eth-rollup": "hardhat run scripts/createEthRollup.ts",
+    "deploy-factory": "env-cmd -f .env hardhat run scripts/deployment.ts --network deploy",
+    "deploy-eth-rollup": "env-cmd -f .env hardhat run scripts/createEthRollup.ts --network deploy",
     "deploy-erc20-rollup": "hardhat run scripts/createERC20Rollup.ts"
   },
   "dependencies": {
+    "@arbitrum/orbit-sdk": "^0.14.0",
     "@offchainlabs/upgrade-executor": "1.1.0-beta.0",
     "@openzeppelin/contracts": "4.5.0",
     "@openzeppelin/contracts-upgradeable": "4.5.2",
-    "patch-package": "^6.4.7"
+    "env-cmd": "^10.1.0",
+    "patch-package": "^6.4.7",
+    "viem": "^2.13.1"
   },
   "private": false,
   "devDependencies": {

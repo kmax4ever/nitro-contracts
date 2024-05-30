@@ -6,7 +6,9 @@ import { config, maxDataSize } from './config'
 import { BigNumber } from 'ethers'
 import { IERC20__factory } from '../build/types'
 import { sleep } from './testSetup'
-
+import * as DeploymentBaseContract from '../DeploymentBaseContract.json'
+import { writeFile } from 'fs/promises'
+import { PrepareNodeConfigParams, prepareNodeConfig } from '@arbitrum/orbit-sdk'
 // 1 gwei
 const MAX_FER_PER_GAS = BigNumber.from('1000000000')
 
@@ -28,7 +30,7 @@ interface RollupCreatedEvent {
 }
 
 export async function createRollup(feeToken?: string) {
-  const rollupCreatorAddress = process.env.ROLLUP_CREATOR_ADDRESS
+  const rollupCreatorAddress = DeploymentBaseContract.RollupCreator
 
   if (!rollupCreatorAddress) {
     console.error(
@@ -80,13 +82,17 @@ export async function createRollup(feeToken?: string) {
     console.log('Calling createRollup to generate a new rollup ...')
     const deployParams = {
       config: config.rollupConfig,
-      batchPoster: config.batchPoster,
+      batchPosters: config.batchPosters,
       validators: config.validators,
       maxDataSize: maxDataSize,
       nativeToken: feeToken,
       deployFactoriesToL2: true,
       maxFeePerGasForRetryables: MAX_FER_PER_GAS,
+      batchPosterManager: config.batchPosters[0],
     }
+
+    console.log(deployParams)
+
     const createRollupTx = await rollupCreator.createRollup(deployParams, {
       value: feeCost,
     })
@@ -153,8 +159,103 @@ export async function createRollup(feeToken?: string) {
         validatorWalletCreator
       )
 
-      const blockNumber = createRollupReceipt.blockNumber
-      console.log('All deployed at block number:', blockNumber)
+      const deployedAtBlockNumber = createRollupReceipt.blockNumber
+      const txHashDeployOrbit = createRollupTx.hash
+
+      console.log('All deployed at block number:', deployedAtBlockNumber)
+      console.log('txHash', txHashDeployOrbit)
+      const orbitSetupConfig = {
+        networkFeeReceiver: config.deployer,
+        infrastructureFeeCollector: config.deployer,
+        staker: config.validators[0],
+        batchPoster: config.batchPosters[0],
+        chainOwner: config.deployer,
+        chainId: config.chainId,
+        chainName: 'GOATL2',
+        minL2BaseFee: 100000000,
+        parentChainId: Number(process.env.CHAIN_ID),
+        'parent-chain-node-url': process.env.RPC_END_POINT,
+        utils: validatorUtils,
+        rollup: rollupAddress,
+        inbox: inboxAddress,
+        nativeToken: '0x0000000000000000000000000000000000000000',
+        outbox: outbox,
+        rollupEventInbox,
+        challengeManager,
+        adminProxy,
+        sequencerInbox,
+        bridge,
+        upgradeExecutor: DeploymentBaseContract.upgradeExecutor,
+        validatorUtils,
+        validatorWalletCreator,
+        deployedAtBlockNumber,
+        txHashDeployOrbit,
+      }
+      await writeFile(
+        'orbitSetupScriptConfig.json',
+        JSON.stringify(orbitSetupConfig, null, 2)
+      )
+
+      console.log('--------------PREPARE NODE CONFIG---------------')
+
+      const coreContracts = {
+        rollup: rollupAddress,
+        inbox: inboxAddress,
+        nativeToken: '0x0000000000000000000000000000000000000000',
+        outbox,
+        rollupEventInbox,
+        challengeManager,
+        adminProxy,
+        sequencerInbox,
+        bridge,
+        upgradeExecutor: DeploymentBaseContract.upgradeExecutor,
+        validatorUtils,
+        validatorWalletCreator,
+        deployedAtBlockNumber,
+      }
+      const nodeConfigParameters: PrepareNodeConfigParams = {
+        chainName: orbitSetupConfig.chainName,
+        chainConfig: {
+          homesteadBlock: 0,
+          daoForkBlock: null,
+          daoForkSupport: true,
+          eip150Block: 0,
+          eip150Hash:
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
+          eip155Block: 0,
+          eip158Block: 0,
+          byzantiumBlock: 0,
+          constantinopleBlock: 0,
+          petersburgBlock: 0,
+          istanbulBlock: 0,
+          muirGlacierBlock: 0,
+          berlinBlock: 0,
+          londonBlock: 0,
+          clique: { period: 0, epoch: 0 },
+          arbitrum: {
+            EnableArbOS: true,
+            AllowDebugPrecompiles: false,
+            DataAvailabilityCommittee: false,
+            InitialArbOSVersion: 11,
+            GenesisBlockNum: 0,
+            MaxCodeSize: 24576,
+            MaxInitCodeSize: 49152,
+            InitialChainOwner: config.deployer as any,
+          },
+          chainId: config.chainId,
+        },
+        coreContracts: coreContracts as any,
+        batchPosterPrivateKey: process.env
+          .BATCH_POSTER_PRIVATE_KEY as `0x${string}`,
+        validatorPrivateKey: process.env.VALIDATOR_PRIVATE_KEY as `0x${string}`,
+        parentChainId: Number(process.env.CHAIN_ID),
+        parentChainRpcUrl: process.env.RPC_ENDPOINT as string,
+      }
+
+      nodeConfigParameters.parentChainBeaconRpcUrl = process.env.RPC_ENDPOINT
+
+      const nodeConfig = prepareNodeConfig(nodeConfigParameters)
+      await writeFile('nodeConfig.json', JSON.stringify(nodeConfig, null, 2))
     } else {
       console.error('RollupCreated event not found')
     }

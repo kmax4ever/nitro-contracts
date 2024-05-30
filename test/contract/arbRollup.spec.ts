@@ -301,6 +301,8 @@ const setup = async () => {
     batchPosterManager: await batchPosterManager.getAddress(),
   }
 
+  console.log({ deployParams })
+
   const response = await rollupCreator.createRollup(deployParams, {
     value: ethers.utils.parseEther('0.2'),
   })

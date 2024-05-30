@@ -102,6 +102,8 @@ export async function deployAllContracts(
     false,
   ])
 
+  console.log(`ethSequencerInbox`, ethSequencerInbox.address)
+
   const ethInbox = await deployContract('Inbox', signer, [maxDataSize])
   const ethRollupEventInbox = await deployContract(
     'RollupEventInbox',
@@ -176,6 +178,7 @@ export async function deployAllContracts(
     validatorWalletCreator,
     rollupCreator,
     deployHelper,
+    ethSequencerInbox,
   }
 }
 

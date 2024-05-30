@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat'
 import '@nomiclabs/hardhat-ethers'
 import { deployAllContracts } from './deploymentUtils'
-
+import { writeFile } from 'fs/promises'
 async function main() {
   const [signer] = await ethers.getSigners()
 
@@ -22,7 +22,25 @@ async function main() {
       contracts.validatorWalletCreator.address,
       contracts.deployHelper.address
     )
+
+    const contractAddress = {
+      bridgeCreator: contracts.bridgeCreator.address,
+      osp: contracts.osp.address,
+      challengeManager: contracts.challengeManager.address,
+      rollupAdmin: contracts.rollupAdmin.address,
+      rollupUser: contracts.rollupUser.address,
+      upgradeExecutor: contracts.upgradeExecutor.address,
+      validatorUtils: contracts.validatorUtils.address,
+      validatorWalletCreator: contracts.validatorWalletCreator.address,
+      deployHelper: contracts.deployHelper.address,
+      RollupCreator: contracts.rollupCreator.address,
+      ethSequencerInbox: contracts.ethSequencerInbox.address,
+    }
     console.log('Template is set on the Rollup Creator')
+    await writeFile(
+      'DeploymentBaseContract.json',
+      JSON.stringify(contractAddress, null, 2)
+    )
   } catch (error) {
     console.error(
       'Deployment failed:',
